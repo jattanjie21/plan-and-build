@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+          # Pull the section between "## [VERSION]" and the next "## [" header
+          awk -v ver="${VERSION}" '
+            $0 ~ "^## \\[" ver "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+
+          if [ ! -s release-notes.md ]; then
+            echo "No CHANGELOG entry found for ${VERSION}" >&2
+            exit 1
+          fi
+
+      - name: Verify SKILL.md version matches tag
+        run: |
+          SKILL_VERSION=$(grep -E '^version:' SKILL.md | head -1 | awk '{print $2}')
+          TAG_VERSION="${{ steps.notes.outputs.version }}"
+          if [ "${SKILL_VERSION}" != "${TAG_VERSION}" ]; then
+            echo "Tag version (${TAG_VERSION}) does not match SKILL.md version (${SKILL_VERSION})" >&2
+            exit 1
+          fi
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ steps.notes.outputs.version }}
+          body_path: release-notes.md
+          files: |
+            SKILL.md
+            CHANGELOG.md
+            update.sh

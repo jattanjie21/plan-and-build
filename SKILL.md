@@ -1,5 +1,6 @@
 ---
 name: plan-and-build
+version: 2.0.0
 description: >
   Use when a user wants to plan and implement a new feature or bug fix from scratch.
   Triggers on requests like "I want to build X", "add a feature for Y", "fix Z",
