@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_URL="https://raw.githubusercontent.com/jattanjie21/plan-and-build-skill/main"
+REPO_URL="https://raw.githubusercontent.com/jattanjie21/plan-and-build/main"
 SKILL_DIR="${HOME}/.claude/skills/plan-and-build"
 SKILL_FILE="${SKILL_DIR}/SKILL.md"
 
